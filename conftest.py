@@ -17,3 +17,11 @@ def session(in_memory_db):
     start_mappers()
     yield sessionmaker(bind=in_memory_db)()
     clear_mappers()
+
+# TODO: not sure about the scope of this thing
+@pytest.fixture()
+def add_stock(session):
+    def _add_stock(lines):
+        for line in lines:
+            session.add(line)
+    yield _add_stock

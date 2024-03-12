@@ -1,55 +1,38 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from model import Base
+from .db import db, init_db_command
+# db = SQLAlchemy(model_class=Base)
 
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
 
-    # TODO: fix the config
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE = os.path.join(app.instance_path, 'flaskr.sqlite')
-    )
 
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        app.config.from_mapping(test_config)
-    
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-    
-    db = SQLAlchemy(model_class=Base)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
     db.init_app(app)
+    app.cli.add_command(init_db_command)
     
-    from model import OrderLine
-
-    with app.app_context():
-        db.create_all()
     # these are the routes
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
+    # some random routes are working I think
+    # lets make some test for this?
+    from model import OrderLine, Batch
 
-    @app.route("/allocate", methods=["POST"])
-    def allocate_endpoint():
-        pass
+    @app.route('/batch/<batch_id>')
+    def show_batch(batch_id):
+        batch = db.get_or_404(Batch, batch_id)
+        return batch.id
 
-    @app.route("/test", methods=["GET"])
-    def test_get():
-        ol = OrderLine(orderid = "id-1", sku = "sku-1", qty=5)
-        db.session.add(ol)
+    @app.post('/batch/')
+    def add_batch():
+        batch = Batch(
+            ref = request.form["order_id"],
+            sku = "sku",
+            qty= 5
+        )
+        db.session.add(batch)
         db.session.commit()
-        return 'Ok'
-
-    @app.route("/orderline/<id>", methods=["GET"])
-    def test_get_2(id):
-        ol = db.session.get(OrderLine, id)
-        return ol.orderid
+        return batch.id
     return app

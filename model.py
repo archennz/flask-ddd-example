@@ -26,7 +26,7 @@ class Base(DeclarativeBase):
 
 class OrderLine(Base):
     __tablename__ = "orderline"
-    id: Mapped[str] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(primary_key=True)
     sku: Mapped[str]
     qty: Mapped[int]
 
@@ -53,7 +53,7 @@ class Batch(Base):
     _purchased_quantity: Mapped[int]
     _allocations : Mapped[Set["OrderLine"]] = relationship(secondary=allocations)
 
-    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
+    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]=None):
         self.id = ref
         self.sku = sku
         self.eta = eta

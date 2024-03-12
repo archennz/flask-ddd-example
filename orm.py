@@ -1,16 +1,16 @@
 from sqlalchemy import Table, MetaData, Column, Integer, String, Date, ForeignKey
-from sqlalchemy.orm import mapper, relationship, registry
+from sqlalchemy.orm import relationship, registry
 
 import model
 
-
+# TODO: not sure what to do with this
 metadata = MetaData()
 
 order_lines = Table(
     "order_lines",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("sku", String(255)),
+    Column("skuk", String(255)),
     Column("qty", Integer, nullable=False),
     Column("orderid", String(255)),
 )

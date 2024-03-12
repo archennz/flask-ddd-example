@@ -1,14 +1,14 @@
 import os
 
 from flask import Flask
-from flaskr.db import db_session
-
-import orm
-from model import OrderLine, Batch
+from flask_sqlalchemy import SQLAlchemy
+from model import Base
 
 def create_app(test_config=None):
-    orm.start_mappers()
+
     app = Flask(__name__, instance_relative_config=True)
+
+    # TODO: fix the config
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE = os.path.join(app.instance_path, 'flaskr.sqlite')
@@ -24,6 +24,15 @@ def create_app(test_config=None):
     except OSError:
         pass
     
+    db = SQLAlchemy(model_class=Base)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+    db.init_app(app)
+    
+    from model import OrderLine
+
+    with app.app_context():
+        db.create_all()
+    # these are the routes
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
@@ -34,29 +43,13 @@ def create_app(test_config=None):
 
     @app.route("/test", methods=["GET"])
     def test_get():
-        ol = OrderLine("id-1", "sku-1", 5)
-        db_session.add(ol)
+        ol = OrderLine(orderid = "id-1", sku = "sku-1", qty=5)
+        db.session.add(ol)
+        db.session.commit()
         return 'Ok'
 
-    @app.route("/test-2", methods=["GET"])
-    def test_get_2():
-        ol = db_session.get(OrderLine, "id-1")
+    @app.route("/orderline/<id>", methods=["GET"])
+    def test_get_2(id):
+        ol = db.session.get(OrderLine, id)
         return ol.orderid
-
-    # @app.route("/allocate", methods=["POST"])
-    # def allocate_endpoint():
-    #     batches = db_session.get(Batch, "some-id")
-    #     line = model.OrderLine(
-    #         request.json["orderid"],
-    #         request.json["sku"],
-    #         request.json["qty"],
-    #     )
-
-    #     batchref = model.allocate(line, batches)
-    #     return model.allocate(line, batches)
-
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        db_session.remove()
-
     return app

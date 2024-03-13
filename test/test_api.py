@@ -4,11 +4,8 @@ from model import Batch
 from datetime import date
 from flaskr.db import db
 
-def test_api_returns_test_2(client):
-    response = client.get("/test-2")
-
 def random_suffix():
-    return uuid.uuid4().hex[.6]
+    return uuid.uuid4().hex[:6]
 
 def random_sku(name=""):
     return f"sku-{name}-{random_suffix()}"
@@ -20,45 +17,35 @@ def random_orderid(name=""):
     return f"order-{name}-{random_suffix()}"
 
 
-# def test_api_returns_allocation(app):
-#     sku, othersku = random_sku(), random_sku("other")
-#     earlybatch = random_batchid(1)
-#     laterbatch = random_batchid(2)
-#     otherbatch = random_batchid(3)
+def test_api_returns_allocation(app, client):
+    sku, othersku = random_sku(), random_sku("other")
+    earlybatch, laterbatch, otherbatch= random_batchid(1), random_batchid(2), random_batchid(3)
 
-#     batch = Batch(earlybatch, sku, 10, date(2012, 10, 23))
-
-#     with app.app_context():
-#         db.session.add(batch)
-
-#     with app.test_request_context(
-
-#     )
-
-#     data = {"orderid": random_orderid, "sku": sku, "qty": 3}
-#     response = client.post("/allocate", json=data)
-
-#     assert response.status_code == 201
-#     assert response.json()["batchid"] == earlybatch
-
-
-# def test_api_returns_batch_again(app, client):
-#     batch = Batch(random_batchid(), random_sku(), 5)
-    
-#     with app.app_context():
-#         db.session.add(batch)
-#         db.session.commit()
-    
-#     res = client.get(f"/batch/{batch.id}")
-#     assert res.code == 200
-
-# random fake test
-# this is using the real database, would be good if it used a test one?
-def test_api_returns_batch(app, client):
     with app.app_context():
-        batch = Batch("1", "sku", 5)
+        db.session.add_all(
+            [
+                Batch(earlybatch, sku, 100, date(2011, 1, 1)),
+                Batch(laterbatch, sku, 100, date(2011, 1, 2)),
+                Batch(otherbatch, othersku, 100, None)
+            ]
+        )
+        db.session.commit()
+    
+    data = {"order_id": random_orderid(), "sku": sku, "qty": 3}
+    res = client.post("/allocate", data = data)
+
+    assert res.status_code == 201
+    assert res.text == earlybatch
+
+
+def test_api_returns_batch(app, client):
+    batch_id = random_batchid()
+    batch = Batch(batch_id, "sku", 5)
+
+    with app.app_context():
         db.session.add(batch)
         db.session.commit()
     
-    res = client.get("/batch/1")
-    assert res.text == "1"
+    res = client.get(f"/batch/{batch_id}")
+    assert res.text == batch_id
+

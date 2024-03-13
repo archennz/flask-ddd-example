@@ -10,8 +10,6 @@ class OutOfStock(Exception):
     pass
 
 
-# TODO: to run domain tests now I need to run the orm
-
 def allocate(line: OrderLine, batches: List[Batch]) -> str:
     try:
         batch = next(b for b in sorted(batches) if b.can_allocate(line))
@@ -31,7 +29,7 @@ class OrderLine(Base):
     qty: Mapped[int]
 
     def __init__(self, orderid: str, sku: str, qty: int):   
-        self.orderid = orderid
+        self.id = orderid
         self.sku = sku
         self.qty = qty
 

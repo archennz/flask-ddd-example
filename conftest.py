@@ -24,10 +24,7 @@ def app():
 
     with app.app_context():
         init_db()
-        # populate with data
-        # db.session.
-        # db.session.commit()
-
+        
     yield app
 
     # clean up 

@@ -2,7 +2,9 @@ import os
 
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-from model import Base
+from sqlalchemy import select
+
+from model import allocate
 from .db import db, init_db_command
 # db = SQLAlchemy(model_class=Base)
 
@@ -25,7 +27,8 @@ def create_app(test_config=None):
         batch = db.get_or_404(Batch, batch_id)
         return batch.id
 
-    @app.post('/batch/')
+    # this is imcomplete
+    @app.post('/batch')
     def add_batch():
         batch = Batch(
             ref = request.form["order_id"],
@@ -35,4 +38,14 @@ def create_app(test_config=None):
         db.session.add(batch)
         db.session.commit()
         return batch.id
+    
+
+    @app.post('/allocate')
+    def allocate_endpoint():
+        line = OrderLine(request.form["order_id"], request.form["sku"], int(request.form["qty"]))
+        stmt = select(Batch).where(Batch.sku == line.sku)
+        batches = db.session.scalars(stmt)
+        batch_id = allocate(line, batches)
+        db.session.commit()
+        return batch_id, 201
     return app

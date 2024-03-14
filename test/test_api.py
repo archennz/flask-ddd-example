@@ -32,6 +32,12 @@ def set_up_batches(add_test_data):
     return sku, othersku, earlybatch, laterbatch, otherbatch
 
 
+def test_can_add_batch(client, app):
+    data = {"id": "1", "sku": "sku-1", "allocation": 3}
+    res = client.post("/batch", data = data)
+
+    assert res.status_code == 201
+
 def test_api_returns_allocation(client, set_up_batches):
     sku, _, earlybatch, _ , _ = set_up_batches
     
@@ -45,7 +51,6 @@ def test_api_returns_400_if_cannot_allocate(client, set_up_batches):
     data = {"order_id": random_orderid(), "sku": random_sku(), "qty": 3}
     res = client.post("/allocate", data = data)
 
-    # should be out of stock exception
     assert res.status_code == 400
     assert "Invalid sku" in res.text
 

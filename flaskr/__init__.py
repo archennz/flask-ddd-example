@@ -8,7 +8,8 @@ from model import OutOfStock
 from repository import BatchRepository
 import services
 from .db import db, init_db_command
-# db = SQLAlchemy(model_class=Base)
+from flask_pydantic import validate
+import schema
 
 def create_app(test_config=None):
 
@@ -19,9 +20,7 @@ def create_app(test_config=None):
     db.init_app(app)
     app.cli.add_command(init_db_command)
     
-    # these are the routes
-    # some random routes are working I think
-    # lets make some test for this?
+
     from model import OrderLine, Batch
 
     @app.route('/batch/<batch_id>')
@@ -29,22 +28,23 @@ def create_app(test_config=None):
         batch = db.get_or_404(Batch, batch_id)
         return batch.id
 
-    # this is imcomplete
     @app.post('/batch')
-    def add_batch():
+    @validate()
+    def add_batch(form: schema.CreateBatchModel):
         batch = Batch(
-            ref = request.form["order_id"],
-            sku = "sku",
-            qty= 5
+            ref = form.id,
+            sku = form.sku,
+            qty= form.allocation
         )
         db.session.add(batch)
         db.session.commit()
-        return batch.id
+        return schema.AllocateOrderResponseModel(batch_id=batch.id), 201
     
 
     @app.post('/allocate')
-    def allocate_endpoint():
-        line = OrderLine(request.form["order_id"], request.form["sku"], int(request.form["qty"]))
+    @validate()
+    def allocate_endpoint(form: schema.AllocateOrderLineModel):
+        line = OrderLine(form.order_id, form.sku, form.qty)
         try:
             batch_id = services.allocate(line, db.session, BatchRepository(db.session))
         except (OutOfStock, services.InvalidSku) as e:

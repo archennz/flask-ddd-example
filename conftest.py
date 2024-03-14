@@ -1,15 +1,7 @@
 import pytest
 from flaskr import create_app
-from flaskr.db import init_db
+from flaskr.db import init_db, db
 
-
-# # TODO: not sure about the scope of this thing
-# @pytest.fixture()
-# def add_stock(session):
-#     def _add_stock(lines):
-#         for line in lines:
-#             session.add(line)
-#     yield _add_stock
 
 @pytest.fixture()
 def app():
@@ -27,8 +19,14 @@ def app():
         
     yield app
 
-    # clean up 
-    # should drop db on tear down
+@pytest.fixture()
+def add_test_data(app):
+    def _add_test_data(data_objects):
+        with app.app_context():
+            db.session.add_all(data_objects)
+            db.session.commit()
+    yield _add_test_data
+            
 
 @pytest.fixture()
 def client(app):

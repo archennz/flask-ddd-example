@@ -4,7 +4,9 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 
-from model import allocate
+from model import OutOfStock
+from repository import BatchRepository
+import services
 from .db import db, init_db_command
 # db = SQLAlchemy(model_class=Base)
 
@@ -43,9 +45,10 @@ def create_app(test_config=None):
     @app.post('/allocate')
     def allocate_endpoint():
         line = OrderLine(request.form["order_id"], request.form["sku"], int(request.form["qty"]))
-        stmt = select(Batch).where(Batch.sku == line.sku)
-        batches = db.session.scalars(stmt)
-        batch_id = allocate(line, batches)
-        db.session.commit()
+        try:
+            batch_id = services.allocate(line, db.session, BatchRepository(db.session))
+        except (OutOfStock, services.InvalidSku) as e:
+            return str(e), 400
         return batch_id, 201
+
     return app

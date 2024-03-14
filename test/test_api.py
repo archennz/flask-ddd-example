@@ -16,20 +16,24 @@ def random_batchid(name=""):
 def random_orderid(name=""):
     return f"order-{name}-{random_suffix()}"
 
-
-def test_api_returns_allocation(app, client):
+@pytest.fixture()
+def set_up_batches(add_test_data):
     sku, othersku = random_sku(), random_sku("other")
     earlybatch, laterbatch, otherbatch= random_batchid(1), random_batchid(2), random_batchid(3)
 
-    with app.app_context():
-        db.session.add_all(
-            [
-                Batch(earlybatch, sku, 100, date(2011, 1, 1)),
-                Batch(laterbatch, sku, 100, date(2011, 1, 2)),
-                Batch(otherbatch, othersku, 100, None)
-            ]
-        )
-        db.session.commit()
+    add_test_data(
+        [
+            Batch(earlybatch, sku, 100, date(2011, 1, 1)),
+            Batch(laterbatch, sku, 100, date(2011, 1, 2)),
+            Batch(otherbatch, othersku, 100, None)
+        ]
+    )
+    
+    return sku, othersku, earlybatch, laterbatch, otherbatch
+
+
+def test_api_returns_allocation(client, set_up_batches):
+    sku, _, earlybatch, _ , _ = set_up_batches
     
     data = {"order_id": random_orderid(), "sku": sku, "qty": 3}
     res = client.post("/allocate", data = data)
@@ -37,14 +41,20 @@ def test_api_returns_allocation(app, client):
     assert res.status_code == 201
     assert res.text == earlybatch
 
+def test_api_returns_400_if_cannot_allocate(client, set_up_batches):
+    data = {"order_id": random_orderid(), "sku": random_sku(), "qty": 3}
+    res = client.post("/allocate", data = data)
 
-def test_api_returns_batch(app, client):
+    # should be out of stock exception
+    assert res.status_code == 400
+    assert "Invalid sku" in res.text
+
+
+def test_api_returns_batch(client, add_test_data):
     batch_id = random_batchid()
     batch = Batch(batch_id, "sku", 5)
 
-    with app.app_context():
-        db.session.add(batch)
-        db.session.commit()
+    add_test_data([batch])
     
     res = client.get(f"/batch/{batch_id}")
     assert res.text == batch_id

@@ -4,12 +4,12 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 
-from model import OutOfStock
-from repository import BatchRepository
-import services
-from .db import db, init_db_command
+from flaskr.model import OutOfStock
+from flaskr.repository import BatchRepository
+import flaskr.services
+from flaskr.db import db, init_db_command
 from flask_pydantic import validate
-import schema
+import flaskr.schema
 
 def create_app(test_config=None):
 
@@ -21,7 +21,7 @@ def create_app(test_config=None):
     app.cli.add_command(init_db_command)
     
 
-    from model import OrderLine, Batch
+    from .model import OrderLine, Batch
 
     @app.route('/batch/<batch_id>')
     def show_batch(batch_id):

@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from model import Batch
+from flaskr.model import Batch
 
 class BatchRepository():
     def __init__(self, session) -> None:

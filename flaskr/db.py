@@ -2,7 +2,7 @@ import click
 from flask.cli import with_appcontext
 
 from flask_sqlalchemy import SQLAlchemy
-from model import Base
+from flaskr.model import Base
 
 db = SQLAlchemy(model_class=Base)
 

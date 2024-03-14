@@ -1,7 +1,7 @@
 from typing import List
 import pytest
-import model
-import services
+import flaskr.model as model
+import flaskr.services as services
 
 class FakeBatchRepository():
     def __init__(self, batches: List[model.Batch]) -> None:

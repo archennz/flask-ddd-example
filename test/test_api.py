@@ -1,6 +1,6 @@
 import pytest
 import uuid
-from model import Batch
+from flaskr.model import Batch
 from datetime import date
 from flaskr.db import db
 

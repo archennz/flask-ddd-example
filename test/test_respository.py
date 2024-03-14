@@ -2,8 +2,8 @@ from datetime import date
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from repository import BatchRepository
-from model import Base, Batch
+from flaskr.repository import BatchRepository
+from flaskr.model import Base, Batch
 
 
 @pytest.fixture()

@@ -1,5 +1,5 @@
-import model
-from repository import BatchRepository
+import flaskr.model as model
+from flaskr.repository import BatchRepository
 
 class InvalidSku(Exception):
     ...

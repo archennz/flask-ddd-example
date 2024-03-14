@@ -1,15 +1,5 @@
-import os
-
-from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select
-
-from flaskr.model import OutOfStock
-from flaskr.repository import BatchRepository
-import flaskr.services
+from flask import Flask
 from flaskr.db import db, init_db_command
-from flask_pydantic import validate
-import flaskr.schema
 
 def create_app(test_config=None):
 
@@ -21,34 +11,9 @@ def create_app(test_config=None):
     app.cli.add_command(init_db_command)
     
 
-    from .model import OrderLine, Batch
+    from . import batch, allocate
+    app.register_blueprint(batch.bp)
+    app.register_blueprint(allocate.bp)
 
-    @app.route('/batch/<batch_id>')
-    def show_batch(batch_id):
-        batch = db.get_or_404(Batch, batch_id)
-        return batch.id
-
-    @app.post('/batch')
-    @validate()
-    def add_batch(form: schema.CreateBatchModel):
-        batch = Batch(
-            ref = form.id,
-            sku = form.sku,
-            qty= form.allocation
-        )
-        db.session.add(batch)
-        db.session.commit()
-        return schema.AllocateOrderResponseModel(batch_id=batch.id), 201
-    
-
-    @app.post('/allocate')
-    @validate()
-    def allocate_endpoint(form: schema.AllocateOrderLineModel):
-        line = OrderLine(form.order_id, form.sku, form.qty)
-        try:
-            batch_id = services.allocate(line, db.session, BatchRepository(db.session))
-        except (OutOfStock, services.InvalidSku) as e:
-            return str(e), 400
-        return batch_id, 201
 
     return app

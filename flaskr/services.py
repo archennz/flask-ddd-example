@@ -1,8 +1,9 @@
 import flaskr.model as model
 from flaskr.repository import BatchRepository
 
-class InvalidSku(Exception):
-    ...
+
+class InvalidSku(Exception): ...
+
 
 def allocate(line: model.OrderLine, session, repository: BatchRepository) -> str:
     batches = repository.get_by_sku(line.sku)

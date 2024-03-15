@@ -6,12 +6,14 @@ from flaskr.model import Base
 
 db = SQLAlchemy(model_class=Base)
 
-@click.command('init-db')
+
+@click.command("init-db")
 @with_appcontext
-def init_db_command(): 
+def init_db_command():
     """Clear existing data and create new tables"""
     init_db()
-    click.echo('Initialized the database.')
+    click.echo("Initialized the database.")
+
 
 def init_db():
     # not sure about this

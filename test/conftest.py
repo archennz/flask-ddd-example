@@ -8,16 +8,14 @@ def app():
     """Create and configure a new app instance for each test"""
     app = create_app()
     app.config.update(
-        {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"
-            }
+        {"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"}
     )
 
     with app.app_context():
         init_db()
-        
+
     yield app
+
 
 @pytest.fixture()
 def add_test_data(app):
@@ -25,12 +23,14 @@ def add_test_data(app):
         with app.app_context():
             db.session.add_all(data_objects)
             db.session.commit()
+
     yield _add_test_data
-            
+
 
 @pytest.fixture()
 def client(app):
     return app.test_client()
+
 
 @pytest.fixture()
 def runner(app):

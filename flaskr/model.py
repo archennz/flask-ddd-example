@@ -6,6 +6,7 @@ from typing import Any, Optional, List, Set
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
 
+
 class OutOfStock(Exception):
     pass
 
@@ -22,13 +23,14 @@ def allocate(line: OrderLine, batches: List[Batch]) -> str:
 class Base(DeclarativeBase):
     pass
 
+
 class OrderLine(Base):
     __tablename__ = "orderline"
     id: Mapped[str] = mapped_column(primary_key=True)
     sku: Mapped[str]
     qty: Mapped[int]
 
-    def __init__(self, orderid: str, sku: str, qty: int):   
+    def __init__(self, orderid: str, sku: str, qty: int):
         self.id = orderid
         self.sku = sku
         self.qty = qty
@@ -39,7 +41,7 @@ allocations = Table(
     Base.metadata,
     Column("id", Integer, primary_key=True),
     Column("orderline_id", ForeignKey("orderline.id")),
-    Column("batch_id", ForeignKey("batch.id")),   
+    Column("batch_id", ForeignKey("batch.id")),
 )
 
 
@@ -49,9 +51,9 @@ class Batch(Base):
     sku: Mapped[str]
     eta: Mapped[date] = mapped_column(nullable=True)
     _purchased_quantity: Mapped[int]
-    _allocations : Mapped[Set["OrderLine"]] = relationship(secondary=allocations)
+    _allocations: Mapped[Set["OrderLine"]] = relationship(secondary=allocations)
 
-    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]=None):
+    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date] = None):
         self.id = ref
         self.sku = sku
         self.eta = eta

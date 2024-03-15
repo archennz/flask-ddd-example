@@ -6,9 +6,10 @@ import flaskr.services as services
 from flaskr.repository import BatchRepository
 from flaskr.db import db
 
-bp = Blueprint('allocate', __name__, url_prefix='/allocate')
+bp = Blueprint("allocate", __name__, url_prefix="/allocate")
 
-@bp.post('')
+
+@bp.post("")
 @validate()
 def allocate_endpoint(form: AllocateOrderLineModel):
     line = OrderLine(form.order_id, form.sku, form.qty)

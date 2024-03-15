@@ -3,7 +3,8 @@ import pytest
 import flaskr.model as model
 import flaskr.services as services
 
-class FakeBatchRepository():
+
+class FakeBatchRepository:
     def __init__(self, batches: List[model.Batch]) -> None:
         self._batches = set(batches)
 
@@ -12,6 +13,7 @@ class FakeBatchRepository():
 
     def get_by_sku(self, sku: str):
         return [x for x in self._batches if x.sku == sku]
+
 
 class FakeSession:
     committed = False

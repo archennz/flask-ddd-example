@@ -9,13 +9,13 @@ db = SQLAlchemy(model_class=Base)
 
 @click.command("init-db")
 @with_appcontext
-def init_db_command():
+def init_db_command() -> None:
     """Clear existing data and create new tables"""
     init_db()
     click.echo("Initialized the database.")
 
 
-def init_db():
+def init_db() -> None:
     # not sure about this
     db.drop_all()
     db.create_all()

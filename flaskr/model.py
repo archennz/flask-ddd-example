@@ -60,29 +60,29 @@ class Batch(Base):
         self._purchased_quantity = qty
         self._allocations = set()  # type: Set[OrderLine]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Batch {self.id}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Batch):
             return False
         return other.id == self.id
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.id)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Batch) -> bool:
         if self.eta is None:
             return False
         if other.eta is None:
             return True
         return self.eta > other.eta
 
-    def allocate(self, line: OrderLine):
+    def allocate(self, line: OrderLine) -> None:
         if self.can_allocate(line):
             self._allocations.add(line)
 
-    def deallocate(self, line: OrderLine):
+    def deallocate(self, line: OrderLine) -> None:
         if line in self._allocations:
             self._allocations.remove(line)
 

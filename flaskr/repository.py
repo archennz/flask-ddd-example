@@ -6,7 +6,7 @@ class BatchRepository:
     def __init__(self, session) -> None:
         self.session = session
 
-    def get_by_id(self, batch_id):
+    def get_by_id(self, batch_id: str):
         stmt = select(Batch).where(Batch.id == batch_id)
         return self.session.scalars(stmt).first()
 

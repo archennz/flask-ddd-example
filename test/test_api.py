@@ -3,6 +3,7 @@ import uuid
 from flaskr.model import Batch
 from datetime import date
 from flaskr.db import db
+from flaskr.schema import CreateBatchModel
 
 
 def random_suffix():
@@ -42,16 +43,15 @@ def set_up_batches(add_test_data):
 
 
 def test_can_add_batch(client, app):
-    data = {"id": "1", "sku": "sku-1", "allocation": 3}
-    res = client.post("/batch", data=data)
+    data = CreateBatchModel(id = "1", sku = "sku", allocation= 3)
+    res = client.post("/batch", data=data.model_dump())
 
     assert res.status_code == 201
 
 
 def test_api_returns_allocation(client, set_up_batches):
     sku, _, earlybatch, _, _ = set_up_batches
-
-    data = {"order_id": random_orderid(), "sku": sku, "qty": 3}
+    data = CreateBatchModel(id = random_orderid(), sku = "sku", allocation= 3)
     res = client.post("/allocate", data=data)
 
     assert res.status_code == 201
@@ -59,7 +59,7 @@ def test_api_returns_allocation(client, set_up_batches):
 
 
 def test_api_returns_400_if_cannot_allocate(client, set_up_batches):
-    data = {"order_id": random_orderid(), "sku": random_sku(), "qty": 3}
+    data = CreateBatchModel(id = random_orderid(), sku = "sku", allocation= 3)
     res = client.post("/allocate", data=data)
 
     assert res.status_code == 400

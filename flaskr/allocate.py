@@ -11,7 +11,7 @@ bp = Blueprint("allocate", __name__, url_prefix="/allocate")
 
 @bp.post("")
 @validate()
-def allocate_endpoint(form: AllocateOrderLineModel):
+def allocate_endpoint(form: AllocateOrderLineModel) -> tuple[str, int]:
     line = OrderLine(form.order_id, form.sku, form.qty)
     try:
         batch_id = services.allocate(line, db.session, BatchRepository(db.session))

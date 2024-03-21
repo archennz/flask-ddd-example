@@ -5,13 +5,13 @@ from typing import Any, Optional, List, Set
 
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
-
+from collections.abc import Sequence
 
 class OutOfStock(Exception):
     pass
 
 
-def allocate(line: OrderLine, batches: List[Batch]) -> str:
+def allocate(line: OrderLine, batches: Sequence[Batch]) -> str:
     try:
         batch = next(b for b in sorted(batches) if b.can_allocate(line))
         batch.allocate(line)
@@ -56,7 +56,7 @@ class Batch(Base):
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date] = None):
         self.id = ref
         self.sku = sku
-        self.eta = eta
+        self.eta = eta # type: ignore #sqlalchemy orm magic
         self._purchased_quantity = qty
         self._allocations = set()  # type: Set[OrderLine]
 

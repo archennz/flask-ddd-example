@@ -7,8 +7,11 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
 from collections.abc import Sequence
 
-class OutOfStock(Exception):
-    pass
+
+class OutOfStock(Exception): ...
+
+
+class CannotFindAllocation(Exception): ...
 
 
 def allocate(line: OrderLine, batches: Sequence[Batch]) -> str:
@@ -19,6 +22,13 @@ def allocate(line: OrderLine, batches: Sequence[Batch]) -> str:
     except StopIteration:
         raise OutOfStock(f"Out of stock for sku {line.sku}")
 
+
+def deallocate(line: OrderLine, batches: Sequence[Batch]) -> str:
+    for batch in batches:
+        if batch.can_deallocate(line):
+            return batch.id
+    raise CannotFindAllocation(f"order {line.id} have not been allocated")
+    
 
 class Base(DeclarativeBase):
     pass
@@ -96,3 +106,6 @@ class Batch(Base):
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+    
+    def can_deallocate(self, line: OrderLine) -> bool:
+        return self.sku == line.sku and line in self._allocations

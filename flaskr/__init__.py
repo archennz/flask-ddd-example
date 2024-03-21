@@ -14,6 +14,7 @@ def create_app(test_config: dict[str,str] = {})-> Flask:
     from . import batch, allocate
 
     app.register_blueprint(batch.bp)
-    app.register_blueprint(allocate.bp)
+    app.register_blueprint(allocate.allocate)
+    app.register_blueprint(allocate.deallocate)
 
     return app

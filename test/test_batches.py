@@ -49,11 +49,14 @@ def test_allocation_is_idempotent():
 def test_deallocate():
     batch, line = make_batch_and_line("EXPENSIVE-FOOTSTOOL", 20, 2)
     batch.allocate(line)
-    batch.deallocate(line)
+    batch.can_deallocate == True
+    batch_id = batch.deallocate(line)
     assert batch.available_quantity == 20
 
 
 def test_can_only_deallocate_allocated_lines():
     batch, unallocated_line = make_batch_and_line("DECORATIVE-TRINKET", 20, 2)
     batch.deallocate(unallocated_line)
+    assert batch.can_deallocate(unallocated_line) == False
     assert batch.available_quantity == 20
+

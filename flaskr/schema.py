@@ -18,3 +18,13 @@ class AllocateOrderLineModel(BaseModel):
 
 class AllocateOrderResponseModel(BaseModel):
     batch_id: str
+
+
+class DeallocateOrderLineModel(BaseModel):
+    order_id: str
+    sku: str
+    qty: int
+
+
+class DeallocateOrderResponseModel(BaseModel):
+    batch_id: str

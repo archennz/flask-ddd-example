@@ -19,6 +19,8 @@ def app():
 
 @pytest.fixture()
 def add_test_data(app):
+    """Add and save test data into test db"""
+
     def _add_test_data(data_objects):
         with app.app_context():
             db.session.add_all(data_objects)
@@ -29,9 +31,11 @@ def add_test_data(app):
 
 @pytest.fixture()
 def client(app):
+    """Create test client for testing"""
     return app.test_client()
 
 
 @pytest.fixture()
 def runner(app):
+    """Create test runner for testing"""
     return app.test_cli_runner()

@@ -95,10 +95,9 @@ class Batch(Base):
 
     def deallocate(self, line_id: str) -> None:
         if self.can_deallocate(line_id):
-            self._allocations = set(filter(
-                lambda allocation: allocation.id != line_id,
-                self._allocations
-            ))
+            self._allocations = set(
+                filter(lambda allocation: allocation.id != line_id, self._allocations)
+            )
 
     @property
     def allocated_quantity(self) -> int:

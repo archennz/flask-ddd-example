@@ -2,7 +2,7 @@ from flask import Flask
 from flaskr.db import db, init_db_command
 
 
-def create_app(test_config: dict[str,str] = {})-> Flask:
+def create_app(test_config: dict[str, str] = {}) -> Flask:
 
     app = Flask(__name__, instance_relative_config=True)
 

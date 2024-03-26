@@ -18,6 +18,7 @@ class BatchRepository:
         stmt = select(Batch).where(Batch.sku == sku)
         return self.session.scalars(stmt).all()
 
+
 class ProductRepository:
     def __init__(self, session: scoped_session[Session]) -> None:
         self.session = session

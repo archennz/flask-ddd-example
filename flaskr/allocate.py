@@ -9,6 +9,7 @@ from flaskr.db import db
 allocate = Blueprint("allocate", __name__, url_prefix="/allocate")
 deallocate = Blueprint("deallocate", __name__, url_prefix="/deallocate")
 
+
 @allocate.post("")
 @validate()
 def allocate_endpoint(form: AllocateOrderLineModel) -> tuple[str, int]:
@@ -16,9 +17,10 @@ def allocate_endpoint(form: AllocateOrderLineModel) -> tuple[str, int]:
     product = ProductRepository(db.session).get_by_sku(line.sku)
     try:
         batch_id = product.allocate(line)
-    except (OutOfStock) as e:
+    except OutOfStock as e:
         return str(e), 400
     return batch_id, 201
+
 
 @deallocate.post("")
 @validate()
@@ -27,7 +29,6 @@ def deallocate_endpoint(form: DeallocateOrderLineModel) -> tuple[str, int]:
     product = ProductRepository(db.session).get_by_sku(line.sku)
     try:
         batch_id = product.deallocate(line.id)
-    except (CannotFindAllocation) as e:
+    except CannotFindAllocation as e:
         return str(e), 400
     return batch_id, 200
-

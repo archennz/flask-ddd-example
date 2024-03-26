@@ -1,3 +1,4 @@
+from typing import Tuple
 import pytest
 import uuid
 from flaskr.model import Batch, OrderLine
@@ -43,10 +44,13 @@ def set_up_batches(add_test_data):
 
 
 @pytest.fixture()
-def set_up_batches_with_allocation(add_test_data) -> OrderLine:
+def set_up_batches_with_allocation(add_test_data) -> Tuple[str, str, int, str]:
     sku = random_sku()
+    batch_id = random_batchid()
+    order_id = "id"
+    qty = 5
     orderline = OrderLine("id", sku, 5)
-    batch = Batch("ref", sku, 40)
+    batch = Batch(batch_id, sku, 40)
     batch.allocate(orderline)
     add_test_data(
         [
@@ -54,7 +58,7 @@ def set_up_batches_with_allocation(add_test_data) -> OrderLine:
         ]
     )
 
-    return orderline
+    return (order_id, sku, qty, batch_id)
 
 
 def test_can_add_batch(client, app):
@@ -91,6 +95,8 @@ def test_api_returns_batch(client, add_test_data):
     assert res.text == batch_id
 
 def test_api_can_deallocate(client, set_up_batches_with_allocation):
-    orderline = set_up_batches_with_allocation()
-    data = DeallocateOrderLineModel(order_id=orderline.id, sku= orderline.sku, qty=orderline.qty)
-    res = client.post("/deallocate", )
+    id, sku, qty, batch_id = set_up_batches_with_allocation
+    data = DeallocateOrderLineModel(order_id=id, sku= sku, qty=qty)
+
+    res = client.post("/deallocate", data= data.model_dump())
+    assert res.text == batch_id

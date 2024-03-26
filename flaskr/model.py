@@ -23,12 +23,13 @@ def allocate(line: OrderLine, batches: Sequence[Batch]) -> str:
         raise OutOfStock(f"Out of stock for sku {line.sku}")
 
 
-def deallocate(line: OrderLine, batches: Sequence[Batch]) -> str:
+def deallocate(line_id: str, batches: Sequence[Batch]) -> str:
     for batch in batches:
-        if batch.can_deallocate(line):
+        if batch.can_deallocate(line_id):
+            batch.deallocate(line_id)
             return batch.id
-    raise CannotFindAllocation(f"order {line.id} have not been allocated")
-    
+    raise CannotFindAllocation(f"order {line_id} have not been allocated")
+
 
 class Base(DeclarativeBase):
     pass
@@ -66,7 +67,7 @@ class Batch(Base):
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date] = None):
         self.id = ref
         self.sku = sku
-        self.eta = eta # type: ignore #sqlalchemy orm magic
+        self.eta = eta  # type: ignore #sqlalchemy orm magic
         self._purchased_quantity = qty
         self._allocations = set()  # type: Set[OrderLine]
 
@@ -92,9 +93,12 @@ class Batch(Base):
         if self.can_allocate(line):
             self._allocations.add(line)
 
-    def deallocate(self, line: OrderLine) -> None:
-        if line in self._allocations:
-            self._allocations.remove(line)
+    def deallocate(self, line_id: str) -> None:
+        if self.can_deallocate(line_id):
+            self._allocations = set(filter(
+                lambda allocation: allocation.id != line_id,
+                self._allocations
+            ))
 
     @property
     def allocated_quantity(self) -> int:
@@ -104,8 +108,36 @@ class Batch(Base):
     def available_quantity(self) -> int:
         return self._purchased_quantity - self.allocated_quantity
 
+    @property
+    def allocation_ids(self) -> Sequence[str]:
+        return [allocation.id for allocation in self._allocations]
+
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
-    
-    def can_deallocate(self, line: OrderLine) -> bool:
-        return self.sku == line.sku and line in self._allocations
+
+    def can_deallocate(self, line_id: str) -> bool:
+        return line_id in self.allocation_ids
+
+
+class Product:
+    batches: Sequence[Batch]
+    sku: str
+
+    def __init__(self, batches: Sequence[Batch], sku: str) -> None:
+        self.batches = batches
+        self.sku = sku
+
+    def allocate(self, line: OrderLine) -> str:
+        try:
+            batch = next(b for b in sorted(self.batches) if b.can_allocate(line))
+            batch.allocate(line)
+            return batch.id
+        except StopIteration:
+            raise OutOfStock(f"Out of stock for sku {line.sku}")
+
+    def deallocate(self, line_id: str) -> str:
+        for batch in self.batches:
+            if batch.can_deallocate(line_id):
+                batch.deallocate(line_id)
+                return batch.id
+        raise CannotFindAllocation(f"order {line_id} have not been allocated")

@@ -1,5 +1,12 @@
 from datetime import date
-from flaskr.model import Batch, OrderLine
+from flaskr.model import Batch, OrderLine, Product
+
+
+def make_batch_and_line(sku, batch_qty, line_qty) -> tuple[Batch, OrderLine]:
+    return (
+        Batch("batch-001", sku, batch_qty, eta=date.today()),
+        OrderLine(orderid="order-123", sku=sku, qty=line_qty),
+    )
 
 
 def test_allocating_to_a_batch_reduces_the_available_quantity():
@@ -9,13 +16,6 @@ def test_allocating_to_a_batch_reduces_the_available_quantity():
     batch.allocate(line)
 
     assert batch.available_quantity == 18
-
-
-def make_batch_and_line(sku, batch_qty, line_qty):
-    return (
-        Batch("batch-001", sku, batch_qty, eta=date.today()),
-        OrderLine(orderid="order-123", sku=sku, qty=line_qty),
-    )
 
 
 def test_can_allocate_if_available_greater_than_required():
@@ -50,7 +50,7 @@ def test_deallocate():
     batch, line = make_batch_and_line("EXPENSIVE-FOOTSTOOL", 20, 2)
     batch.allocate(line)
     batch.can_deallocate == True
-    batch_id = batch.deallocate(line)
+    batch_id = batch.deallocate(line.id)
     assert batch.available_quantity == 20
 
 

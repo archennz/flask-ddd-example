@@ -13,7 +13,7 @@ def allocate(line: model.OrderLine, session: scoped_session[Session], repository
 
 def deallocate(line: model.OrderLine, session: scoped_session[Session], repository: BatchRepository) -> str:
     batches = repository.get_by_sku(line.sku)
-    batch_id = model.deallocate(line, batches)
+    batch_id = model.deallocate(line.id, batches)
     session.commit()
     return batch_id
     

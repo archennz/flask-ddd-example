@@ -2,7 +2,6 @@ from flask import Blueprint, app
 from flask_pydantic import validate
 from flaskr.model import OrderLine, OutOfStock, CannotFindAllocation
 from flaskr.schema import AllocateOrderLineModel, DeallocateOrderLineModel
-import flaskr.services as services
 from flaskr.repository import BatchRepository, ProductRepository
 from flaskr.db import db
 
@@ -17,6 +16,7 @@ def allocate_endpoint(form: AllocateOrderLineModel) -> tuple[str, int]:
     product = ProductRepository(db.session).get_by_sku(line.sku)
     try:
         batch_id = product.allocate(line)
+        db.session.commit()
     except OutOfStock as e:
         return str(e), 400
     return batch_id, 201
@@ -29,6 +29,7 @@ def deallocate_endpoint(form: DeallocateOrderLineModel) -> tuple[str, int]:
     product = ProductRepository(db.session).get_by_sku(line.sku)
     try:
         batch_id = product.deallocate(line.id)
+        db.session.commit()
     except CannotFindAllocation as e:
         return str(e), 400
     return batch_id, 200

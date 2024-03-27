@@ -1,6 +1,7 @@
 import pytest
 from flaskr import create_app
 from flaskr.db import init_db, db
+from flask.testing import FlaskClient, FlaskCliRunner
 
 
 @pytest.fixture()
@@ -30,12 +31,12 @@ def add_test_data(app):
 
 
 @pytest.fixture()
-def client(app):
+def client(app) -> FlaskClient:
     """Create test client for testing"""
     return app.test_client()
 
 
 @pytest.fixture()
-def runner(app):
+def runner(app) -> FlaskCliRunner:
     """Create test runner for testing"""
     return app.test_cli_runner()

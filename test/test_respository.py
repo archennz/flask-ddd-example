@@ -51,7 +51,7 @@ class TestBatchRepository:
         # assert
         assert batch_in_repo.id == batch_retrieved.id
 
-    def test_get_by_id_not_there(self, ession):
+    def test_get_by_id_not_there(self, session):
         repository = BatchRepository(session)
         retrieved = repository.get_by_id("not-there")
         assert retrieved is None
